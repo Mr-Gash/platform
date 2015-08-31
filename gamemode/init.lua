@@ -171,7 +171,7 @@ hook.Add( "PlayerSay", "Puz:PlayerSay", function( ply, text, team )
 	for k, v in pairs( commands ) do
 		if string.find( text, k, nil, true ) then
 			v( ply, text )
-			return
+			return ""
 		end
 	end
 end )

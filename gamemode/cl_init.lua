@@ -42,7 +42,7 @@ function GM:HUDPaint()
 	if !easing and lastval != ply:GetNWInt( "checkpoint", 0 ) then
 		easing = 0
 	end
-	local x, y = ScaleX( 50 ), ScaleY( 900 )
+	local x, y = ScaleX( 50 ), ScaleY( 1080 - 50 )
 	local w, h = ScaleX( 300 ), ScaleY( 40 )
 	local offsetx = ScaleX( 8 )
 	local offsety = ScaleY( 8 )
