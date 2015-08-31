@@ -63,8 +63,6 @@ end
 
 function GM:PlayerLoadout( ply ) end
 
-function GM:CanPlayerSuicide( ply ) return false end
-
 function GM:PlayerDeathSound() return true end
 
 function GM:ReachedCheckpoint( ply, num, title )
