@@ -69,6 +69,10 @@ function GM:PlayerLoadout( ply ) end
 
 function GM:PlayerDeathSound() return true end
 
+function GM:GetFallDamage( ply, speed )
+	return 0
+end
+
 function GM:ReachedCheckpoint( ply, num, title )
 	if !IsValid( ply ) or !ply:IsPlayer() then return end
 	if ply:GetNWInt( "checkpoint", 0 ) >= num then return end

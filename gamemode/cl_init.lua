@@ -43,22 +43,25 @@ function GM:HUDPaint()
 		easing = 0
 	end
 	local x, y = ScaleX( 50 ), ScaleY( 900 )
-	local w, h = ScaleX( 300 ), ScaleY( 60 )
-	surface.SetDrawColor( Color( 65, 65, 65 ) )
-	surface.DrawRect( x, y, w, h )
+	local w, h = ScaleX( 300 ), ScaleY( 40 )
+	local offsetx = ScaleX( 8 )
+	local offsety = ScaleY( 8 )
+	--surface.SetDrawColor( Color( 65, 65, 65 ) )
+	draw.RoundedBox( 4, x, y, w, h, Color( 65, 65, 65, 140 ) )
 	surface.SetDrawColor( Color( 150, 150, 150 ) )
-	surface.DrawRect( x + 5, y + 5, w - 10, h - 10 )
+	surface.DrawRect( x + 4, y + 4, w - offsetx, h - offsety )
 	surface.SetDrawColor( Color( 100, 100, 255 ) )
-	local w = math.ceil( ( w - 10 ) * lastval / GAMEMODE.LastCheckpoint ) -- ( ~300 - 10 ) * previous checkpoint number / amount of checkpoints
+	local perc = math.ceil( ( w - offsetx ) * lastval / GAMEMODE.LastCheckpoint ) -- ( ~300 - 10 ) * previous checkpoint number / amount of checkpoints
 	if easing then
 		--print( ( w * math.ceil( ply:GetNWInt( "checkpoint", 0 ) / GAMEMODE.LastCheckpoint ) - w ) )
-		local diff = math.ceil( ( ScaleX( 300 ) - 10 ) * ply:GetNWInt( "checkpoint", 0 ) /  GAMEMODE.LastCheckpoint ) - w -- ( ~300 - 10 ) * current checkpoint number / amount of checkpoints - width of bar at previous checkpoint
-		w = w + diff * math.EaseInOut( easing, 0, .8 ) -- width plus diff * float between 0 and 1
+		local diff = math.ceil( ( w - offsetx ) * ply:GetNWInt( "checkpoint", 0 ) /  GAMEMODE.LastCheckpoint ) - perc -- ( ~300 - 10 ) * current checkpoint number / amount of checkpoints - width of bar at previous checkpoint
+		perc = perc + diff * math.EaseInOut( easing, 0, .8 ) -- width plus diff * float between 0 and 1
 		easing = easing + .6 * FrameTime()
 		if easing >= 1 then
 			easing = nil
 			lastval = ply:GetNWInt( "checkpoint", 0 )
 		end
 	end
-	surface.DrawRect( x + 5, y + 5, w, h - 10 )
+	surface.DrawRect( x + 4, y + 4, perc, h - offsety )
+	draw.SimpleText( math.Round( ( perc / ( w - offsetx ) ) * 100 ) .. "%", "DermaLarge", x + ScaleX( 310 ), y + ScaleY( 20 ), Color( 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER )
 end
