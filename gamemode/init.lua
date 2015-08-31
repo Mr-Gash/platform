@@ -65,20 +65,13 @@ function GM:GetLP( cpid )
 	end
 end
 
-local models = {}
-
-for i = 1, 9 do
-	table.insert( models, "models/player/group01/male_0" .. i )
-	-- table.insert( models, "models/player/group01/female_0" .. i )
-end
-
 function GM:PlayerLoadout( ply )
 	local b = string.Split( ":", ply:SteamID() )
 	local id = tonumber( b[ #b ] )
-	local index = id % #models + 1
-	local mdl = models[ index ]
-	ply:SetModel( mdl )
-	if ply:SteamID() == "STEAM_0:1:27024007" then ply:SetModel( "models/player/group01/male_03" ) end
+	local index = (id % 9) + 1
+	local mdl = "models/player/group01/male_0" .. index
+
+	ply:SetModel( ply:SteamID() == "STEAM_0:1:27024007" and "models/player/group01/male_03" or mdl )
 end
 
 function GM:PlayerDeathSound() return true end
@@ -109,9 +102,7 @@ function GM:ReachedCheckpoint( ply, num, title )
 		end
 		local deaths = ply:Deaths()
 		local str = messages[ 55 ]
-		for k = 1, 100 do
-			local v = messages[ k ]
-			if !v then continue end
+		for k, v in pairs( messages ) do
 			if deaths <= k then
 				str = v
 				break
@@ -162,17 +153,14 @@ commands[ "reset" ] = function( ply, text )
 	GAMEMODE:PlayerInitialSpawn( ply )
 	GAMEMODE:PlayerSpawn( ply )
 end
-
 commands[ "restart" ] = commands[ "reset" ]
 
-local prefix = "!"
-
 hook.Add( "PlayerSay", "Puz:PlayerSay", function( ply, text, team )
-	if string.Explode( "", text )[1] != prefix then return end
-	for k, v in pairs( commands ) do
-		if string.find( text, k, nil, true ) then
-			v( ply, text )
-			return ""
-		end
+	if text:Left(1) ~= "!" and text:Left(1) ~= "/" then return end
+	
+	local cmd = commands[ text:lower():sub( 2, #text ) ]
+	if cmd then
+		cmd( ply, text )
+		return ""
 	end
 end )
