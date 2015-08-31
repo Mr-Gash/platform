@@ -65,8 +65,19 @@ function GM:GetLP( cpid )
 	end
 end
 
+local models = {}
+
+for i = 1, 9 do
+	table.insert( models, "models/player/group01/male_0" .. i )
+	-- table.insert( models, "models/player/group01/female_0" .. i )
+end
+
 function GM:PlayerLoadout( ply )
-	--ply:SetModel(  )
+	local b = string.Split( ":", ply:SteamID() )
+	local id = tonumber( b[ #b ] )
+	local index = id % #models + 1
+	local mdl = models[ index ]
+	ply:SetModel( mdl ) 
 end
 
 function GM:PlayerDeathSound() return true end
