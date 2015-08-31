@@ -1,0 +1,7 @@
+"platform"
+{
+	"base"		"base"
+	"title"		"Platform"
+	"maps"		"^puz_*"
+	"menusystem"	"1"
+}
