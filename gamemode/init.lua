@@ -7,10 +7,10 @@ util.AddNetworkString( "Puz:UpdateLastCP" )
 local checkpoints = {}
 
 local messages = {
-    [5] = "with only %d death",
-    [15] = "with %d death",
-    [35] = "after %d death",
-    [55] = "after trying %d time",
+    {5, "with only %d death"},
+    {15, "with %d death"},
+    {35, "after %d death"},
+    {55, "after trying %d time"},
 }
 
 
@@ -101,10 +101,10 @@ function GM:ReachedCheckpoint( ply, num, title )
 			time = minutes .. " minute" .. ( minutes != 1 and "s" or "" ) .. " " .. ( seconds > 0 and "and " or "" ) .. time
 		end
 		local deaths = ply:Deaths()
-		local str = messages[ 55 ]
+		local str = messages[ #messages ][2]
 		for k, v in pairs( messages ) do
-			if deaths <= k then
-				str = v
+			if deaths <= v[1] then
+				str = v[2]
 				break
 			end
 		end
@@ -157,7 +157,7 @@ commands[ "restart" ] = commands[ "reset" ]
 
 hook.Add( "PlayerSay", "Puz:PlayerSay", function( ply, text, team )
 	if text:Left(1) ~= "!" and text:Left(1) ~= "/" then return end
-	
+
 	local cmd = commands[ text:lower():sub( 2, #text ) ]
 	if cmd then
 		cmd( ply, text )
