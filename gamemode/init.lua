@@ -87,10 +87,9 @@ function GM:ReachedCheckpoint( ply, num, title )
 		end
 		local deaths = ply:Deaths()
 		local str = messages[ 55 ]
-		for k = 1, 500 do
+		for k = 1, 100 do
 			local v = messages[ k ]
 			if !v then continue end
-			print( k, deaths <= k )
 			if deaths <= k then
 				str = v
 				break
