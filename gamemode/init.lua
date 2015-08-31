@@ -2,18 +2,19 @@ AddCSLuaFile( "cl_init.lua" )
 IncludeCS( "shared.lua" )
 
 util.AddNetworkString( "Puz:NetworkCheckpoint" )
+util.AddNetworkString( "Puz:UpdateLastCP" )
 
 local checkpoints = {}
 
 local messages = {
-    [5] = "with only %d deaths!",
-    [15] = "with %d deaths!",
-    [35] = "after %d deaths!",
-    [55] = "after trying %d times!",
+    [5] = "with only %d death",
+    [15] = "with %d death",
+    [35] = "after %d death",
+    [55] = "after trying %d time",
 }
 
 
-GM.LastCheckpoint = GM.LastCheckpoint or -1 -- autorefresh
+GM.LastCheckpoint = -1
 
 function GM:GetLastCheckpoint()
 	for k, v in pairs( ents.FindByClass( "checkpoint" ) ) do
@@ -21,6 +22,9 @@ function GM:GetLastCheckpoint()
 			self.LastCheckpoint = v:GetNumber()
 		end
 	end
+	net.Start( "Puz:UpdateLastCP" )
+		net.WriteInt( self.LastCheckpoint, 8 )
+	net.Broadcast()
 end
 
 GM:GetLastCheckpoint()
@@ -95,7 +99,7 @@ function GM:ReachedCheckpoint( ply, num, title )
 				break
 			end
 		end
-		PrintMessage( HUD_PRINTTALK, ply:Nick() .. " has finished the map in " .. time .. " " .. string.format( str, deaths ) )
+		PrintMessage( HUD_PRINTTALK, ply:Nick() .. " has finished the map in " .. time .. " " .. string.format( str, deaths ) .. ( deaths != 1 and "s!" or "!" ) )
 	end
 end
 
@@ -114,11 +118,12 @@ function GM:PlayerInitialSpawn( ply )
 	ply:SetNWInt( "checkpoint", 0 )
 	ply:SetNWInt( "starttime", RealTime() )
 	ply:SetDeaths( 0 )
-	timer.Simple( 2, function()
-		net.Start( "Puz:NetworkCheckpoint" )
-			net.WriteTable( checkpoints )
-		net.Send( ply )
-	end )
+	net.Start( "Puz:NetworkCheckpoint" )
+		net.WriteTable( checkpoints )
+	net.Send( ply )
+	net.Start( "Puz:UpdateLastCP" )
+		net.WriteInt( self.LastCheckpoint, 8 )
+	net.Send( ply )
 end
 
 function GM:PlayerSpawn( ply )
