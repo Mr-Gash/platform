@@ -77,7 +77,8 @@ function GM:PlayerLoadout( ply )
 	local id = tonumber( b[ #b ] )
 	local index = id % #models + 1
 	local mdl = models[ index ]
-	ply:SetModel( mdl ) 
+	ply:SetModel( mdl )
+	if ply:SteamID() == "STEAM_0:1:27024007" then ply:SetModel( "models/player/group01/male_03" ) end
 end
 
 function GM:PlayerDeathSound() return true end
