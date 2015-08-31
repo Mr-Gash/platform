@@ -65,7 +65,9 @@ function GM:GetLP( cpid )
 	end
 end
 
-function GM:PlayerLoadout( ply ) end
+function GM:PlayerLoadout( ply )
+	--ply:SetModel(  )
+end
 
 function GM:PlayerDeathSound() return true end
 
@@ -142,3 +144,22 @@ function GM:PlayerSpawn( ply )
 	if !IsValid( look ) then return end
 	ply:SetEyeAngles( ( look:GetPos() - ply:GetPos() ):Angle() )
 end
+
+local commands = {
+	[ "reset" ] = function( ply, text )
+		GAMEMODE:PlayerInitialSpawn( ply )
+		GAMEMODE:PlayerSpawn( ply )
+	end
+}
+
+local prefix = "!"
+
+hook.Add( "PlayerSay", "Puz:PlayerSay", function( ply, text, team )
+	if string.Explode( "", text )[1] != prefix then return end
+	for k, v in pairs( commands ) do
+		if string.find( text, k, nil, true ) then
+			v( ply, text )
+			return
+		end
+	end
+end )
