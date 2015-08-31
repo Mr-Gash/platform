@@ -140,5 +140,5 @@ function GM:PlayerSpawn( ply )
 	ply:SetPos( check:GetPos() )
 	local look = self:GetLP( ply:GetNWInt( "checkpoint", 0 ) )
 	if !IsValid( look ) then return end
-	ply:SetEyeAngles( ( look:GetPos() - ply:GetShootPos() ):Angle() )
+	ply:SetEyeAngles( ( look:GetPos() - ply:GetPos() ):Angle() )
 end
