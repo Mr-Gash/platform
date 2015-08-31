@@ -145,12 +145,13 @@ function GM:PlayerSpawn( ply )
 	ply:SetEyeAngles( ( look:GetPos() - ply:GetPos() ):Angle() )
 end
 
-local commands = {
-	[ "reset" ] = function( ply, text )
-		GAMEMODE:PlayerInitialSpawn( ply )
-		GAMEMODE:PlayerSpawn( ply )
-	end
-}
+local commands = {}
+commands[ "reset" ] = function( ply, text )
+	GAMEMODE:PlayerInitialSpawn( ply )
+	GAMEMODE:PlayerSpawn( ply )
+end
+
+commands[ "restart" ] = commands[ "reset" ]
 
 local prefix = "!"
 
