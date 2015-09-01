@@ -5,16 +5,14 @@ util.AddNetworkString( "Puz:NetworkCheckpoint" )
 util.AddNetworkString( "Puz:UpdateLastCP" )
 
 local checkpoints = {}
-
-local messages = {
+local FinishMessages = {
     {5, "with only %d death"},
     {15, "with %d death"},
     {35, "after %d death"},
     {55, "after trying %d time"},
 }
 
-
-GM.LastCheckpoint = -1
+GM.LastCheckpoint = GM.LastCheckpoint or -1
 
 function GM:GetLastCheckpoint()
 	for k, v in pairs( ents.FindByClass( "checkpoint" ) ) do
@@ -83,33 +81,33 @@ end
 function GM:ReachedCheckpoint( ply, num, title )
 	if !IsValid( ply ) or !ply:IsPlayer() then return end
 	if ply:GetNWInt( "checkpoint", 0 ) >= num then return end
-	print( tostring( ply ) .. " finished " .. title .. "(" .. num .. ")" )
+
 	ply:SetNWInt( "checkpoint", num )
-	if num == self.LastCheckpoint then
-		local time = string.FormattedTime( RealTime() - ply:GetNWInt( "starttime", 0 ) )
-		local seconds = time.s
-		local minutes = time.m
-		local mili = time.ms
-		if time.h > 0 then
-			minutes = minutes + time.h/60
-		end
-		time = ""
-		if seconds > 0 then
-			time = time .. seconds .. ( ( mili > 0 and "." .. math.Round( mili ) ) or "" ) .. " second" .. ( ( seconds != 1 or mili > 0 ) and "s" or "" )
-		end
-		if minutes > 0 then
-			time = minutes .. " minute" .. ( minutes != 1 and "s" or "" ) .. " " .. ( seconds > 0 and "and " or "" ) .. time
-		end
-		local deaths = ply:Deaths()
-		local str = messages[ #messages ][2]
-		for k, v in pairs( messages ) do
-			if deaths <= v[1] then
-				str = v[2]
-				break
-			end
-		end
-		PrintMessage( HUD_PRINTTALK, ply:Nick() .. " has finished the map in " .. time .. " " .. string.format( str, deaths ) .. ( deaths != 1 and "s!" or "!" ) )
+	if num ~= self.LastCheckpoint then return end
+
+	local time = string.FormattedTime( RealTime() - ply:GetNWInt( "starttime", 0 ) )
+	local seconds = time.s
+	local minutes = time.m
+	local mili = time.ms
+	if time.h > 0 then
+		minutes = minutes + time.h/60
 	end
+	time = ""
+	if seconds > 0 then
+		time = time .. seconds .. ( ( mili > 0 and "." .. math.Round( mili ) ) or "" ) .. " second" .. ( ( seconds ~= 1 or mili > 0 ) and "s" or "" )
+	end
+	if minutes > 0 then
+		time = minutes .. " minute" .. ( minutes ~= 1 and "s" or "" ) .. " " .. ( seconds > 0 and "and " or "" ) .. time
+	end
+	local deaths = ply:Deaths()
+	local str = FinishMessages[ #FinishMessages ][2]
+	for k, v in pairs( FinishMessages ) do
+		if deaths <= v[1] then
+			str = v[2]
+			break
+		end
+	end
+	PrintMessage( HUD_PRINTTALK, ply:Nick() .. " has finished the map in " .. time .. " " .. string.format( str, deaths ) .. ( deaths ~= 1 and "s!" or "!" ) )
 end
 
 function GM:InitPostEntity()
@@ -120,36 +118,65 @@ function GM:InitPostEntity()
 		tab.mins, tab.maxs = v:GetCollisionBounds()
 		table.insert( checkpoints, tab )
 	end
+
 	self:GetLastCheckpoint()
 end
+
+game.pCleanUpMap = game.pCleanUpMap or game.CleanUpMap
+function game.CleanUpMap( ... )
+	hook.Call( "PreCleanUpMap", GAMEMODE, ... )
+
+	game.pCleanUpMap()
+
+	hook.Call( "PostCleanUpMap", GAMEMODE, ... )
+end
+
+function GM:LoadMapScript()
+
+end
+
+function GM:PostCleanUpMap()
+	self:LoadMapScript()
+	self:InitPostEntity()
+end
+if GAMEMODE then GAMEMODE:InitPostEntity() end
 
 function GM:PlayerInitialSpawn( ply )
 	ply:SetNWInt( "checkpoint", 0 )
 	ply:SetNWInt( "starttime", RealTime() )
 	ply:SetDeaths( 0 )
+
 	net.Start( "Puz:NetworkCheckpoint" )
 		net.WriteTable( checkpoints )
 	net.Send( ply )
+
 	net.Start( "Puz:UpdateLastCP" )
 		net.WriteInt( self.LastCheckpoint, 8 )
 	net.Send( ply )
 end
 
 function GM:PlayerSpawn( ply )
-	ply:SetJumpPower( 200 )
-	ply:AllowFlashlight( true )
+	ply:SetJumpPower( 200 ) -- bit higher than previous, but better
+	ply:SetWalkSpeed( 320 ) -- default sprint speed
+	ply:SetRunSpeed( 200 ) -- shift to slow down
+	ply:AllowFlashlight( true ) -- why, gm13?
+
 	ply:SetCollisionGroup( COLLISION_GROUP_DEBRIS_TRIGGER )
 	ply:CrosshairDisable()
+
 	local check = self:GetCPSpawn( ply:GetNWInt( "checkpoint", 0 ) )
-	if !IsValid( check ) then return end
+	if not IsValid( check ) then return end
 	ply:SetPos( check:GetPos() )
+
 	local look = self:GetLP( ply:GetNWInt( "checkpoint", 0 ) )
-	if !IsValid( look ) then return end
+	if not IsValid( look ) then return end
 	ply:SetEyeAngles( ( look:GetPos() - ply:GetPos() ):Angle() )
 end
 
 local commands = {}
 commands[ "reset" ] = function( ply, text )
+	ply:Kill()
+
 	GAMEMODE:PlayerInitialSpawn( ply )
 	GAMEMODE:PlayerSpawn( ply )
 end

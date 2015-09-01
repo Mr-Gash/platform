@@ -1,11 +1,10 @@
 include( "shared.lua" )
 
-local ply = LocalPlayer() -- here for script refreshes
+local ply = IsValid(LocalPlayer()) and LocalPlayer() or nil -- here for script refreshes
 hook.Add( "InitPostEntity", "Puz:LocalPlayer", function() ply = LocalPlayer() end )
 
 local checkpoints = {}
-
-GM.LastCheckpoint = -1
+GM.LastCheckpoint = GM.LastCheckpoint or -1
 
 net.Receive( "Puz:NetworkCheckpoint", function()
 	checkpoints = net.ReadTable()
@@ -21,7 +20,7 @@ function GM:PostDrawOpaqueRenderables()
 	end
 end
 
-local scrw, scrh = ScrW(), ScrH()
+local scrw, scrh
 local myw, myh = 1920, 1080
 local function ScaleX( x )
 	return math.Round( x * ( scrw/myw ) )
@@ -39,18 +38,22 @@ local lastval = 0
 local easing
 
 function GM:HUDPaint()
-	if !easing and lastval != ply:GetNWInt( "checkpoint", 0 ) then
+	if not ply then return end
+
+	scrw, scrh = ScrW(), ScrH()
+	if not easing and lastval ~= ply:GetNWInt( "checkpoint", 0 ) then
 		easing = 0
 	end
 	local x, y = ScaleX( 50 ), ScaleY( 1080 - 50 )
 	local w, h = ScaleX( 300 ), ScaleY( 40 )
 	local offsetx = ScaleX( 8 )
 	local offsety = ScaleY( 8 )
-	--surface.SetDrawColor( Color( 65, 65, 65 ) )
+
 	draw.RoundedBox( 4, x, y, w, h, Color( 65, 65, 65, 140 ) )
 	surface.SetDrawColor( Color( 150, 150, 150 ) )
 	surface.DrawRect( x + 4, y + 4, w - offsetx, h - offsety )
 	surface.SetDrawColor( Color( 100, 100, 255 ) )
+
 	local perc = math.ceil( ( w - offsetx ) * lastval / GAMEMODE.LastCheckpoint ) -- ( ~300 - 10 ) * previous checkpoint number / amount of checkpoints
 	if easing then
 		--print( ( w * math.ceil( ply:GetNWInt( "checkpoint", 0 ) / GAMEMODE.LastCheckpoint ) - w ) )

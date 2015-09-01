@@ -2,6 +2,6 @@
 {
 	"base"		"base"
 	"title"		"Platform"
-	"maps"		"^puz_*"
+	"maps"		"^puz_*|^climb_*"
 	"menusystem"	"1"
 }
